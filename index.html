@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Distance Degree Decoded Presentation Reader</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell" data-theme="light">
+    <header class="topbar" data-ui>
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <span>DDD</span>
+        </div>
+        <div>
+          <p class="brand-kicker">Distance Degree Decoded</p>
+          <h1>Presentation Reader</h1>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <button class="secondary-button compact" id="modeToggle" type="button" aria-pressed="false" aria-label="Switch to blank canvas mode">Blank Canvas</button>
+        <button class="secondary-button compact" id="sidebarToggle" type="button" title="Collapse control panel" aria-label="Collapse control panel" aria-expanded="true">Controls</button>
+        <button class="icon-button" id="themeToggle" type="button" title="Toggle dark mode" aria-label="Toggle dark mode">
+          <span aria-hidden="true">&#9680;</span>
+        </button>
+        <button class="icon-button" id="hideUiToggle" type="button" title="Hide interface (H)" aria-label="Hide interface">
+          <span aria-hidden="true">&#9633;</span>
+        </button>
+        <button class="primary-button" id="fullscreenBtn" type="button">Full Screen</button>
+      </div>
+    </header>
+
+    <main class="reader-layout">
+      <aside class="sidebar" data-ui>
+        <section class="panel upload-panel">
+          <button class="secondary-button wide board-only" id="boardThemeToggle" type="button">Black Board</button>
+          <label class="upload-card" for="pdfUpload">
+            <span class="upload-icon" aria-hidden="true">&uarr;</span>
+            <span class="upload-title">Upload PDF</span>
+            <span class="upload-copy">Slides, notes, handouts, or lecture decks</span>
+          </label>
+          <input id="pdfUpload" type="file" accept="application/pdf">
+          <p class="file-name" id="fileName">No PDF selected</p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>Navigation</h2>
+            <span id="pageCountLabel">0 pages</span>
+          </div>
+          <div class="control-row">
+            <button class="tool-button" id="prevPage" type="button" title="Previous page (Left arrow)">&lsaquo;</button>
+            <div class="page-readout">
+              <label for="pageJump">Page</label>
+              <input id="pageJump" type="number" min="1" value="1">
+            </div>
+            <button class="tool-button" id="nextPage" type="button" title="Next page (Right arrow)">&rsaquo;</button>
+          </div>
+          <div class="control-row">
+            <button class="tool-button" id="zoomOut" type="button" title="Zoom out (-)">-</button>
+            <span class="metric" id="zoomLabel">100%</span>
+            <button class="tool-button" id="zoomIn" type="button" title="Zoom in (+)">+</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>Auto Scroll</h2>
+            <span id="scrollState">Paused</span>
+          </div>
+          <div class="control-row">
+            <button class="secondary-button" id="autoScrollToggle" type="button">Start</button>
+            <button class="tool-button" id="scrollReset" type="button" title="Back to top">&uarr;</button>
+          </div>
+          <label class="range-label" for="scrollSpeed">
+            Speed
+            <span id="scrollSpeedValue">3</span>
+          </label>
+          <input id="scrollSpeed" type="range" min="1" max="10" value="3">
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>Pointer</h2>
+            <button class="switch" id="laserToggle" type="button" aria-pressed="false">Laser</button>
+          </div>
+          <label class="field-label" for="laserColor">Color</label>
+          <div class="swatch-row" id="laserColors" role="group" aria-label="Laser colors">
+            <button class="swatch is-active" type="button" data-color="#ef4444" style="--swatch:#ef4444" aria-label="Red laser"></button>
+            <button class="swatch" type="button" data-color="#0ea5e9" style="--swatch:#0ea5e9" aria-label="Blue laser"></button>
+            <button class="swatch" type="button" data-color="#22c55e" style="--swatch:#22c55e" aria-label="Green laser"></button>
+            <button class="swatch" type="button" data-color="#f59e0b" style="--swatch:#f59e0b" aria-label="Amber laser"></button>
+          </div>
+          <label class="range-label" for="laserSize">
+            Size
+            <span id="laserSizeValue">18</span>
+          </label>
+          <input id="laserSize" type="range" min="8" max="48" value="18">
+          <label class="range-label" for="laserFade">
+            Fade
+            <span id="laserFadeValue">5s</span>
+          </label>
+          <input id="laserFade" type="range" min="1" max="15" value="5">
+          <button class="secondary-button wide" id="spotlightToggle" type="button" aria-pressed="false">Spotlight</button>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>Annotate</h2>
+            <div class="annotation-actions">
+              <button class="tool-button" id="annotationUndo" type="button" title="Undo annotation (Ctrl+Z)" aria-label="Undo annotation" disabled>&#8630;</button>
+              <button class="tool-button" id="annotationRedo" type="button" title="Redo annotation (Ctrl+Y)" aria-label="Redo annotation" disabled>&#8631;</button>
+              <button class="tool-button" id="clearAnnotations" type="button" title="Clear annotations" aria-label="Clear annotations">&#9003;</button>
+            </div>
+          </div>
+          <div class="tool-grid" id="annotationTools" role="group" aria-label="Annotation tools">
+            <button class="tool-chip is-active" type="button" data-tool="pen" data-label="Pen"><span class="chip-icon" aria-hidden="true">&#9998;</span><span class="chip-label">Pen</span></button>
+            <button class="tool-chip" type="button" data-tool="linePen" data-label="Line Pen"><span class="chip-icon" aria-hidden="true">&#9585;</span><span class="chip-label">Line Pen</span></button>
+            <button class="tool-chip" type="button" data-tool="highlighter" data-label="Highlighter"><span class="chip-icon" aria-hidden="true">&#9630;</span><span class="chip-label">Highlighter</span></button>
+            <button class="tool-chip" type="button" data-tool="eraser" data-label="Eraser"><span class="chip-icon" aria-hidden="true">&#9003;</span><span class="chip-label">Eraser</span></button>
+            <button class="tool-chip" type="button" data-tool="rectangle" data-label="Rectangle"><span class="chip-icon" aria-hidden="true">&#9633;</span><span class="chip-label">Rectangle</span></button>
+            <button class="tool-chip" type="button" data-tool="ellipse" data-label="Ellipse"><span class="chip-icon" aria-hidden="true">&#9711;</span><span class="chip-label">Ellipse</span></button>
+            <button class="tool-chip" type="button" data-tool="line" data-label="Line"><span class="chip-icon" aria-hidden="true">&#9472;</span><span class="chip-label">Line</span></button>
+            <button class="tool-chip" type="button" data-tool="text" data-label="Text"><span class="chip-icon" aria-hidden="true">T</span><span class="chip-label">Text</span></button>
+          </div>
+          <label class="field-label" for="annotationColor">Color</label>
+          <input class="color-input" id="annotationColor" type="color" value="#0f62fe">
+          <label class="range-label" for="annotationSize">
+            Stroke
+            <span id="annotationSizeValue">4</span>
+          </label>
+          <input id="annotationSize" type="range" min="2" max="24" value="4">
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>Timer</h2>
+            <span class="metric" id="clockLabel">00:00</span>
+          </div>
+          <div class="timer-grid">
+            <button class="secondary-button" id="timerStart" type="button">Start</button>
+            <button class="secondary-button" id="timerReset" type="button">Reset</button>
+            <button class="secondary-button" id="stopwatchStart" type="button">Stopwatch</button>
+            <button class="secondary-button" id="stopwatchReset" type="button">Clear</button>
+          </div>
+          <label class="field-label" for="timerMinutes">Presentation minutes</label>
+          <input id="timerMinutes" type="number" min="1" max="240" value="30">
+        </section>
+
+        <section class="panel shortcuts">
+          <h2>Shortcuts</h2>
+          <dl>
+            <div><dt>Space</dt><dd>Pause or start scroll</dd></div>
+            <div><dt>&larr; / &rarr;</dt><dd>Change page</dd></div>
+            <div><dt>+ / -</dt><dd>Zoom</dd></div>
+            <div><dt>L</dt><dd>Laser</dd></div>
+            <div><dt>S</dt><dd>Spotlight</dd></div>
+            <div><dt>B</dt><dd>Blank canvas</dd></div>
+            <div><dt>H</dt><dd>Hide interface</dd></div>
+            <div><dt>F</dt><dd>Full screen</dd></div>
+          </dl>
+        </section>
+      </aside>
+
+      <section class="stage-shell">
+        <div class="stage-toolbar" data-ui>
+          <span id="statusLabel">Ready for a lecture deck</span>
+          <div class="stage-actions">
+            <button class="ghost-button pdf-only" id="fitWidth" type="button">Fit Width</button>
+            <button class="ghost-button pdf-only" id="fitPage" type="button">Fit Page</button>
+          </div>
+        </div>
+
+        <div class="document-stage" id="documentStage">
+          <div class="welcome-screen" id="welcomeScreen">
+            <div class="welcome-logo">
+              <div class="brand-mark large" aria-hidden="true"><span>DDD</span></div>
+              <p>Distance Degree Decoded</p>
+            </div>
+            <h2>Distance Degree Decoded Presentation Reader</h2>
+            <p>Upload a PDF to present lessons, explain slides, annotate live, and keep your online class moving with a clean educator-first workspace.</p>
+            <label class="primary-button upload-inline" for="pdfUpload">Choose PDF</label>
+          </div>
+
+          <div class="pdf-scroll" id="pdfScroll" aria-label="PDF presentation canvas"></div>
+          <div class="blank-board" id="blankBoard" data-board-theme="white" aria-label="Blank teaching canvas">
+            <div class="blank-board-surface" id="boardSurface">
+              <canvas class="annotation-canvas board-canvas" id="boardCanvas"></canvas>
+              <canvas class="laser-canvas board-laser-canvas" id="boardLaserCanvas"></canvas>
+              <div class="board-watermark" aria-hidden="true">Distance Degree Decoded</div>
+            </div>
+          </div>
+          <div class="watermark" aria-hidden="true">Distance Degree Decoded</div>
+          <div class="laser-dot" id="laserDot" aria-hidden="true"></div>
+          <div class="spotlight" id="spotlight" aria-hidden="true"></div>
+        </div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
