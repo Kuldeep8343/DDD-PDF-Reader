@@ -270,28 +270,44 @@ async function redoAnnotations() {
 
 async function renderAllPages({ preserveAnnotations = true } = {}) {
   if (!state.pdf) return;
+
   updateStatus("Rendering PDF...");
   const scrollTop = pdfScroll.scrollTop;
-  state.annotationSnapshots = preserveAnnotations ? captureAnnotationSnapshots(state.pages) : new Map();
+
+  // Save existing annotations if needed
+  state.annotationSnapshots = preserveAnnotations
+    ? captureAnnotationSnapshots(state.pages)
+    : new Map();
+
+  // Clear previous pages
   pdfScroll.innerHTML = "";
   state.pages = [];
 
-  for (let pageNumber = 1; pageNumber <= state.pdf.numPages; pageNumber += 1) {
+  // Create a document fragment for better performance
+  const fragment = document.createDocumentFragment();
+
+  // Render pages one by one in strict order
+  for (let pageNumber = 1; pageNumber <= state.pdf.numPages; pageNumber++) {
     const page = await state.pdf.getPage(pageNumber);
     const viewport = page.getViewport({ scale: state.scale });
+
+    // Page wrapper
     const pageWrap = document.createElement("article");
     pageWrap.className = "pdf-page";
     pageWrap.dataset.page = String(pageNumber);
     pageWrap.style.width = `${viewport.width}px`;
     pageWrap.style.height = `${viewport.height}px`;
 
+    // PDF canvas
     const pdfCanvas = document.createElement("canvas");
     const pdfContext = pdfCanvas.getContext("2d");
+
     pdfCanvas.width = Math.floor(viewport.width);
     pdfCanvas.height = Math.floor(viewport.height);
     pdfCanvas.style.width = `${viewport.width}px`;
     pdfCanvas.style.height = `${viewport.height}px`;
 
+    // Annotation canvas
     const annotationCanvas = document.createElement("canvas");
     annotationCanvas.className = "annotation-canvas";
     annotationCanvas.width = Math.floor(viewport.width);
@@ -299,28 +315,63 @@ async function renderAllPages({ preserveAnnotations = true } = {}) {
     annotationCanvas.style.width = `${viewport.width}px`;
     annotationCanvas.style.height = `${viewport.height}px`;
 
+    // Laser canvas
     const laserCanvas = document.createElement("canvas");
     laserCanvas.className = "laser-canvas";
     laserCanvas.width = Math.floor(viewport.width);
     laserCanvas.height = Math.floor(viewport.height);
     laserCanvas.style.width = `${viewport.width}px`;
     laserCanvas.style.height = `${viewport.height}px`;
+
+    // Attach annotation events
     attachAnnotationEvents(annotationCanvas, laserCanvas);
 
+    // Add canvases to wrapper
     pageWrap.append(pdfCanvas, annotationCanvas, laserCanvas);
-    pdfScroll.append(pageWrap);
 
-    await page.render({ canvasContext: pdfContext, viewport }).promise;
-    await restoreAnnotationSnapshot(annotationCanvas, state.annotationSnapshots.get(pageNumber));
-    state.pages.push({ pageNumber, pageWrap, annotationCanvas, laserCanvas, laserStrokes: [] });
+    // IMPORTANT: Render page completely BEFORE appending
+    await page.render({
+      canvasContext: pdfContext,
+      viewport
+    }).promise;
+
+    // Restore annotations
+    await restoreAnnotationSnapshot(
+      annotationCanvas,
+      state.annotationSnapshots.get(pageNumber)
+    );
+
+    // Store page reference
+    state.pages.push({
+      pageNumber,
+      pageWrap,
+      annotationCanvas,
+      laserCanvas,
+      laserStrokes: []
+    });
+
+    // Add to fragment in correct order
+    fragment.appendChild(pageWrap);
   }
 
-  pageCountLabel.textContent = `${state.pdf.numPages} page${state.pdf.numPages === 1 ? "" : "s"}`;
+  // Append all pages together after rendering
+  pdfScroll.appendChild(fragment);
+
+  // Update UI
+  pageCountLabel.textContent =
+    `${state.pdf.numPages} page${state.pdf.numPages === 1 ? "" : "s"}`;
+
   pageJump.max = String(state.pdf.numPages);
   pageJump.value = String(state.currentPage);
+
+  // Restore scroll position
   pdfScroll.scrollTop = scrollTop;
+
   updateUndoRedoButtons();
-  updateStatus(`${fileName.textContent} - Page ${state.currentPage} of ${state.pdf.numPages}`);
+
+  updateStatus(
+    `${fileName.textContent} - Page ${state.currentPage} of ${state.pdf.numPages}`
+  );
 }
 
 async function loadPdf(file) {
